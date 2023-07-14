@@ -12,7 +12,7 @@ Before using this script, make sure you have the following:
 
 ## Setup
 
-1.  Clone or download the script to your script folder in `/appdata/Tautulli/scripts/`
+1.  Clone or download the script to your script folder in `/appdata/Tautulli/scripts/plex-qbit-unraid.py`
     
 2.  Change the values in the script with login details for your set up.
 3. Make sure you have `Use increments for manual Parity Check` and `Use increments for scheduled Parity Check` set to YES in the 'Parity Check Tuning' plugin. You can also set `Use increments for automatic Parity Check` to yes, but it's not recommenced.
