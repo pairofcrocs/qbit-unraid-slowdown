@@ -16,7 +16,8 @@ Before using this script, make sure you have the following:
     
 2.  Change the values in the script with login details for your set up.
 3. Make sure you have `Use increments for manual Parity Check` and `Use increments for scheduled Parity Check` set to YES in the 'Parity Check Tuning' plugin. You can also set `Use increments for automatic Parity Check` to yes, but it's not recommenced.
-4. Set up a new Script in Tautulli with only the triggers of `Playback Start` and `Playback Stop` and save.
+![parity check settings](https://i.imgur.com/gsk4Auu.png)
+5. Set up a new Script in Tautulli with only the triggers of `Playback Start` and `Playback Stop` and save.
 ![tautulli settings](https://i.imgur.com/NdVRjmZ.png)
 
 After that, you should be good to go!
