@@ -7,7 +7,7 @@ This script is designed to automate the management of a Plex media server, qBitt
 Before using this script, make sure you have the following:
 
  - 'Parity Check Tuning' plugin by Dave Walker (itimpi)
- - Tautulli 
+ - Tautulli docker container by JonnyWong16
  - The required Python packages installed: `requests`, `re`, `qbittorrentapi`, `paramiko`. (create a user script that runs at the start of the array with the following: `docker exec tautulli pip install requests qbittorrentapi`)
 
 ## Setup
