@@ -8,7 +8,7 @@ Before using this script, make sure you have the following:
 
  - 'Parity Check Tuning' plugin by Dave Walker (itimpi)
  - Tautulli docker container by JonnyWong16
- - The required Python packages installed in the Tautulli container: `requests`, `re`, `qbittorrentapi`, `paramiko`. (create a user script that runs at the start of the array with the following: `docker exec tautulli pip install requests qbittorrent-api paramiko python-dotenv`)
+ - The required Python packages installed in the Tautulli container: `requests`, `re`, `qbittorrentapi`, `paramiko` `python-dotenv`. (create a user script that runs at the start of the array with the following: `docker exec tautulli pip install requests qbittorrent-api paramiko python-dotenv`)
 
 ## Setup
 
