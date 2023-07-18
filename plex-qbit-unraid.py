@@ -74,7 +74,7 @@ active_streams1 = get_active_streams(PLEX_TOKEN)
 def check_speed_limits_mode():
     from qbittorrentapi import Client
     client = Client(host=QBITTORRENT_HOST, username=username, password=password)
-    client.auth_log_in(username=username, password=password)
+    client.auth_log_in(username=USERNAME, password=PASSWORD)
     transfer_info = client.transfer_speed_limits_mode()
     return transfer_info
 check_speed_limits_mode()
@@ -86,13 +86,13 @@ transfer_info = check_speed_limits_mode()
 def qbit_slowdown():
     from qbittorrentapi import Client
     client = Client(host=QBITTORRENT_HOST, username=username, password=password)
-    client.auth_log_in(username=username, password=password)
+    client.auth_log_in(username=USERNAME, password=PASSWORD)
     speedset = client.transfer_setSpeedLimitsMode(intended_state=True)
 
 #speed up qbit
 def qbit_speedup():
     from qbittorrentapi import Client
-    client = Client(host=QBITTORRENT_HOST, username=USERNAME, password=PASSWORD)
+    client = Client(host=QBITTORRENT_HOST, username=username, password=password)
     client.auth_log_in(username=USERNAME, password=PASSWORD)
     speedset = client.transfer_setSpeedLimitsMode(intended_state=False)
 
@@ -181,5 +181,3 @@ if active_streams1 > 0:
     if status_variable == 0:
         send_pause_command(hostname, username, password, pause_command)
         print("Pausing Parity Check")
-
-
