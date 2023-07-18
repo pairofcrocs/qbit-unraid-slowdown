@@ -1,183 +1,140 @@
+import os
+import paramiko
 import requests
 import re
-import qbittorrentapi
-import paramiko
 
-####################################################################
+from qbittorrentapi import Client as qbitClient
+from dotenv import load_dotenv
 
-PLEX_TOKEN = 'REPLACE'  # Replace with your Plex token
-PLEX_HOST = 'http://REPLACE:32400/status/sessions'
-QBITTORRENT_HOST = 'REPLACE:8080'
-USERNAME = 'admin'
-PASSWORD = 'password'
+load_dotenv()
+UNRAID_IP = os.environ['UNRAID_IP']
+PLEX_TOKEN = os.environ['PLEX_TOKEN']
+PLEX_PORT = os.environ['PLEX_PORT']
+QBIT_PORT = os.environ['QBIT_PORT']
+QBIT_USERNAME = os.environ['QBIT_USERNAME']
+QBIT_PASSWORD = os.environ['QBIT_PASSWORD']
+UNRAID_USERNAME = os.environ['UNRAID_USERNAME']
+UNRAID_PASSWORD = os.environ['UNRAID_PASSWORD']
 
-# Replace the following values with your Unraid server details
-hostname = 'REPLACE'
-username = 'REPLACE'
-password = 'REPLACE'
+STATUS_COMMAND = 'parity.check status'
+PAUSE_COMMAND = 'parity.check pause'
+RESUME_COMMAND = 'parity.check resume'
 
-####################################################################
+ACTIVE_STREAM_EXPRESSION = re.compile(r'<MediaContainer size="(\d+)"')
 
-status_command = 'parity.check status'
-pause_command = 'parity.check pause'
-resume_command = 'parity.check resume'
+## send ssh command
+def sendSSHCommand(unraidHostname: str, unraidUser: str, unraidPass: str, command: str) -> str:
+    ## create ssh client
+    with paramiko.SSHClient() as ssh:
+        ## add host key policy
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        try:
+            ## connect to server
+            ssh.connect(unraidHostname, username=unraidUser, password=unraidPass)
+            ## execute command
+            stdin, stdout, stderr = ssh.exec_command(command)
+            ## return output
+            return stdout.read().decode().strip()
+        except paramiko.AuthenticationException:
+            print('Authentication failed')
+        except paramiko.SSHException as ssh_exception:
+            print('SSH connection failed:', str(ssh_exception))
+        except paramiko.Exception as e:
+            print('Error:', str(e))
 
-#check status of parity check
-def send_ssh_command(hostname, username, password, status_command):
-    # Create SSH client
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    try:
-        # Connect to the server
-        client.connect(hostname, username=username, password=password)
-
-        # Execute the command
-        stdin, stdout, stderr = client.exec_command(status_command)
-
-        # Read the command output
-        output = stdout.read().decode()
-
-        # Close the connection
-        client.close()
-
-        return output.strip()  # Return the output with leading/trailing whitespace removed
-    except paramiko.AuthenticationException:
-        print("Authentication failed")
-    except paramiko.SSHException as ssh_exception:
-        print("SSH connection failed:", str(ssh_exception))
-    except paramiko.Exception as e:
-        print("Error:", str(e))
-
-#get amount of streams from plex
-def get_active_streams(PLEX_TOKEN):
+## get amount of plex streams
+def getActiveStreams(plexHost: str, plexToken: str) -> int:
     headers = {
         'Accept': 'application/xml',
-        'X-Plex-Token': PLEX_TOKEN
+        'X-Plex-Token': plexToken
     }
-    response = requests.get(PLEX_HOST, headers=headers)
+    resp = requests.get(plexHost, headers=headers)
 
-    if response.status_code == 200:
-        data = response.text
-        active_streams = re.findall(r'<MediaContainer size="(\d+)"', data)
+    if resp.status_code == 200:
+        data = resp.text
+        active_streams = ACTIVE_STREAM_EXPRESSION.findall(data)
 
         if active_streams:
             return int(active_streams[0])
         else:
             return 0
     else:
-        print('Error occurred while fetching active streams:', response.status_code)
+        print('Error occurred while fetching active streams:', resp.status_code)
         return None
-active_streams1 = get_active_streams(PLEX_TOKEN)
 
-#get speed mode from qbit
-def check_speed_limits_mode():
-    from qbittorrentapi import Client
-    client = Client(host=QBITTORRENT_HOST)
-    client.auth_log_in(username=USERNAME, password=PASSWORD)
-    transfer_info = client.transfer_speed_limits_mode()
-    return transfer_info
-check_speed_limits_mode()
-transfer_info = check_speed_limits_mode()
+## get qbit speed mode
+def getQbitSpeed(qbitHost: str, qbitUser: str, qbitPass: str) -> None:
+    qbit = qbitClient(host=qbitHost)
+    ## authenticate unraid
+    qbit.auth_log_in(username=qbitUser, password=qbitPass)
+    ## send limit state
+    return qbit.transfer_speed_limits_mode()
 
-#####################################################
+## change qbit speed
+def limitQbitSpeed(qbitHost: str, qbitUser: str, qbitPass: str, limitSpeed: bool = True) -> None:
+    ## login
+    qbit = qbitClient(host=qbitHost)
+    ## authenticate unraid
+    qbit.auth_log_in(username=qbitUser, password=qbitPass)
+    ## send limit state
+    return qbit.transfer_setSpeedLimitsMode(intended_state=limitSpeed)
 
-#slows qbit
-def qbit_slowdown():
-    from qbittorrentapi import Client
-    client = Client(host=QBITTORRENT_HOST)
-    client.auth_log_in(username=USERNAME, password=PASSWORD)
-    speedset = client.transfer_setSpeedLimitsMode(intended_state=True)
+## parse status message to int
+def parseParityStatus(status: str) -> int:
+    ## check if parity is in progress
+    if status == 'Status: No array operation currently in progress':
+        return 1
+    if 'Correcting Parity-Check' in status:
+        return 0
+    return -1
 
-#speed up qbit
-def qbit_speedup():
-    from qbittorrentapi import Client
-    client = Client(host=QBITTORRENT_HOST)
-    client.auth_log_in(username=USERNAME, password=PASSWORD)
-    speedset = client.transfer_setSpeedLimitsMode(intended_state=False)
+if __name__ == '__main__':
+    plexHost = f'http://{UNRAID_IP}:{PLEX_PORT}/status/sessions'
+    qbitHost = f'{UNRAID_IP}:{QBIT_PORT}'
 
-#pause parity check
-def send_pause_command(hostname, username, password, pause_command):
-    # Create SSH client
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    activeStreams = getActiveStreams(plexHost, PLEX_TOKEN)
+    qbitSpeed = getQbitSpeed(qbitHost, QBIT_USERNAME, QBIT_PASSWORD)
+    parityStatus = sendSSHCommand(UNRAID_IP, UNRAID_USERNAME, UNRAID_PASSWORD, STATUS_COMMAND)
+    parityState = parseParityStatus(parityStatus)
 
-    try:
-        # Connect to the server
-        client.connect(hostname, username=username, password=password)
+    print('------------------------------')
+    print('Starting Script...')
+    print('------------------------------')
+    print(f'Number of active streams: {activeStreams}')
+    print(f'qBittorrent Speed Mode: {qbitSpeed}')
+    print(f'Parity Check Status: {parityState} ({parityStatus})')
+    print('------------------------------')
+    print('Sending signals...')
+    print('------------------------------')
 
-        # Execute the command
-        stdin, stdout, stderr = client.exec_command(pause_command)
-
-        # Close the connection
-        client.close()
-    except paramiko.AuthenticationException:
-        print("Authentication failed")
-    except paramiko.SSHException as ssh_exception:
-        print("SSH connection failed:", str(ssh_exception))
-    except paramiko.Exception as e:
-        print("Error:", str(e))
-
-#resume parity check
-def send_resume_command(hostname, username, password, resume_command):
-    # Create SSH client
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    try:
-        # Connect to the server
-        client.connect(hostname, username=username, password=password)
-
-        # Execute the command
-        stdin, stdout, stderr = client.exec_command(resume_command)
-
-        # Close the connection
-        client.close()
-    except paramiko.AuthenticationException:
-        print("Authentication failed")
-    except paramiko.SSHException as ssh_exception:
-        print("SSH connection failed:", str(ssh_exception))
-    except paramiko.Exception as e:
-        print("Error:", str(e))
-
-
-#status_command output
-command_output = send_ssh_command(hostname, username, password, status_command)
-
-
-#checks to see if parity check is in progress
-if command_output == "Status: No array operation currently in progress":
-    status_variable = 1
-elif "Correcting Parity-Check" in command_output:
-    status_variable = 0
-else:
-    status_variable = -1
-
-#sets print value for parity status
-if status_variable == 1:
-    parity_status = "Resuming..."
-if status_variable == 0:
-    parity_status = "Pausing..."
-
-#prints status ()
-print("Number of active streams:", active_streams1)
-print("qBittorrent Speed Mode:", transfer_info)
-print("Parity Check Status:", parity_status)
-
-#if no streams, speed up
-if active_streams1 == 0:
-    qbit_speedup()
-    print("qBittorrent Speed Up")
+    ## active stream
+    ## slow qbit and pause parity check
+    if activeStreams > 0:
+        print('Slowing Qbit down...')
+        limitQbitSpeed(qbitHost, QBIT_USERNAME, QBIT_PASSWORD, limitSpeed=True)
+        
+        if parityState == 0:
+            print('Pausing parity check...')
+            sendSSHCommand(UNRAID_IP, UNRAID_USERNAME, UNRAID_PASSWORD, PAUSE_COMMAND)
+    ## inactive stream
+    ## speed qbit back up and resume parity check
+    else:
+        print('Speeding Qbit back up...')
+        limitQbitSpeed(qbitHost, QBIT_USERNAME, QBIT_PASSWORD, limitSpeed=False)
+        
+        if parityState == 0:
+            print('Resuming parity check...')
+            sendSSHCommand(UNRAID_IP, UNRAID_USERNAME, UNRAID_PASSWORD, RESUME_COMMAND)
     
-    if status_variable == 0:
-        send_resume_command(hostname, username, password, resume_command)
-        print("Resuming Parity Check")
+    activeStreams = getActiveStreams(plexHost, PLEX_TOKEN)
+    qbitSpeed = getQbitSpeed(qbitHost, QBIT_USERNAME, QBIT_PASSWORD)
+    parityStatus = sendSSHCommand(UNRAID_IP, UNRAID_USERNAME, UNRAID_PASSWORD, STATUS_COMMAND)
+    parityState = parseParityStatus(parityStatus)
 
-#if people are streaming, slow down
-if active_streams1 > 0:
-    qbit_slowdown()
-    print("Qbittorrent Slowed Down..." )
-
-    if status_variable == 0:
-        send_pause_command(hostname, username, password, pause_command)
-        print("Pausing Parity Check")
+    print('------------------------------')
+    print(f'Number of active streams: {activeStreams}')
+    print(f'qBittorrent Speed Mode: {qbitSpeed}')
+    print(f'Parity Check Status: {parityState} ({parityStatus})')
+    print('------------------------------')
+    print('Done!')
+    print('------------------------------')
