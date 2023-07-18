@@ -23,7 +23,7 @@ RESUME_COMMAND = 'parity.check resume'
 ACTIVE_STREAM_EXPRESSION = re.compile(r'<MediaContainer size="(\d+)"')
 
 ## send ssh command
-def sendSSHCommand(unraidHostname, unraidUser, unraidPass, command):
+def sendSSHCommand(unraidHostname: str, unraidUser: str, unraidPass: str, command: str) -> str:
     ## create ssh client
     with paramiko.SSHClient() as ssh:
         ## add host key policy
@@ -43,7 +43,7 @@ def sendSSHCommand(unraidHostname, unraidUser, unraidPass, command):
             print('Error:', str(e))
 
 ## get amount of plex streams
-def getActiveStreams(plexHost, plexToken):
+def getActiveStreams(plexHost: str, plexToken: str) -> int:
     headers = {
         'Accept': 'application/xml',
         'X-Plex-Token': plexToken
@@ -63,7 +63,7 @@ def getActiveStreams(plexHost, plexToken):
         return None
 
 ## get qbit speed mode
-def getQbitSpeed(qbitHost, qbitUser, qbitPass):
+def getQbitSpeed(qbitHost: str, qbitUser: str, qbitPass: str) -> None:
     qbit = qbitClient(host=qbitHost)
     ## authenticate unraid
     qbit.auth_log_in(username=qbitUser, password=qbitPass)
@@ -71,7 +71,7 @@ def getQbitSpeed(qbitHost, qbitUser, qbitPass):
     return qbit.transfer_speed_limits_mode()
 
 ## change qbit speed
-def limitQbitSpeed(qbitHost, qbitUser, qbitPass, limitSpeed=True):
+def limitQbitSpeed(qbitHost: str, qbitUser: str, qbitPass: str, limitSpeed: bool = True) -> None:
     ## login
     qbit = qbitClient(host=qbitHost)
     ## authenticate unraid
@@ -79,11 +79,12 @@ def limitQbitSpeed(qbitHost, qbitUser, qbitPass, limitSpeed=True):
     ## send limit state
     return qbit.transfer_setSpeedLimitsMode(intended_state=limitSpeed)
 
-def parseParityStatus(status):
+## parse status message to int
+def parseParityStatus(status: str) -> int:
     ## check if parity is in progress
-    if parityStatus == 'Status: No array operation currently in progress':
+    if status == 'Status: No array operation currently in progress':
         return 1
-    if 'Correcting Parity-Check' in parityStatus:
+    if 'Correcting Parity-Check' in status:
         return 0
     return -1
 
