@@ -24,4 +24,4 @@ Before using this script, make sure you have the following:
 
 After that, you should be good to go!
 
-Now, every time something is started or stopped in Plex, the script will check if anyone is watching and slowdown qBittorrent/pause a parity check or speedup qBittorrent and resume parity check. This will only happen when there are 0 people steaming. You can check the Tautulli logs to see what the script is doing.
+Now, every time something is started or stopped in Plex, the script will check if anyone is watching and slowdown qBittorrent/pause a parity check or speedup qBittorrent, resume parity check, and resume the mover if it was interrupted. This will only happen when there are 0 people steaming. You can check the Tautulli logs to see what the script is doing.
