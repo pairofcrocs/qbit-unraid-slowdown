@@ -1,6 +1,6 @@
 # qBit/unRaid Slowdown
 
-This script is designed to automate the management of a Plex media server, qBittorrent client, and an Unraid server. It checks the number of active streams on the Plex server and adjusts the speed mode of the qBittorrent client accordingly. It also provides functionality to pause or resume a parity check operation on the Unraid server.
+This script is designed to automate the management of a Plex media server, qBittorrent client, and an Unraid server. It checks the number of active streams on the Plex server and adjusts the speed mode of the qBittorrent client accordingly. It also provides functionality to pause or resume a parity check operation on the Unraid server as well as pausing the mover and resuming when there are no streams (only if the mover was interrupted).
 
 ## Prerequisites
 
@@ -19,6 +19,8 @@ Before using this script, make sure you have the following:
 ![parity check settings](https://i.imgur.com/gsk4Auu.png)
 5. Set up a new Script in Tautulli with only the triggers of `Playback Start` and `Playback Stop` and save.
 ![tautulli settings](https://i.imgur.com/NdVRjmZ.png)
+6. Adjust the limits of the qBittorrent by going to `Tools` > `Speed` then setting the `Alternate Rate Limits` to your desired speed and save.
+![qBittorrent settings](https://i.imgur.com/Dl90CKZ.png)
 
 After that, you should be good to go!
 
