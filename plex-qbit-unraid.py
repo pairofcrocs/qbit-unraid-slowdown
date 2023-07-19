@@ -88,6 +88,10 @@ def parseParityStatus(status: str) -> int:
         return 0
     return -1
 
+
+## parse qbitspeed to int
+
+
 if __name__ == '__main__':
     plexHost = f'http://{UNRAID_IP}:{PLEX_PORT}/status/sessions'
     qbitHost = f'{UNRAID_IP}:{QBIT_PORT}'
@@ -100,9 +104,12 @@ if __name__ == '__main__':
     print('------------------------------')
     print('Starting Script...')
     print('------------------------------')
-    print(f'Number of active streams: {activeStreams}')
-    print(f'qBittorrent Speed Mode: {qbitSpeed}')
-    print(f'Parity Check Status: {parityState} ({parityStatus})')
+    print(f'Number of active Plex streams: {activeStreams}')
+    if "1" in qbitSpeed:
+        print('qBittorrent Speed Mode: Alternative Speed')
+    if "0" in qbitSpeed:
+        print('qBittorrent Speed Mode: Full Speed')
+    print(f'Parity Check {parityStatus}')
     print('------------------------------')
     print('Sending signals...')
     print('------------------------------')
@@ -132,9 +139,12 @@ if __name__ == '__main__':
     parityState = parseParityStatus(parityStatus)
 
     print('------------------------------')
-    print(f'Number of active streams: {activeStreams}')
-    print(f'qBittorrent Speed Mode: {qbitSpeed}')
-    print(f'Parity Check Status: {parityState} ({parityStatus})')
+    print(f'Number of active Plex streams: {activeStreams}')
+    if "1" in qbitSpeed:
+        print('qBittorrent Speed Mode: Alternative Speed')
+    if "0" in qbitSpeed:
+        print('qBittorrent Speed Mode: Full Speed')
+    print(f'Parity Check {parityStatus}')
     print('------------------------------')
     print('Done!')
     print('------------------------------')
