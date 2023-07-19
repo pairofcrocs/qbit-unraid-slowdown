@@ -17,10 +17,10 @@ Before using this script, make sure you have the following:
 3. Replace the values (REPLACEME) in the .env file with login details for your set up.
 4. Make sure you have `Use increments for manual Parity Check` and `Use increments for scheduled Parity Check` set to YES in the 'Parity Check Tuning' plugin. You can also set `Use increments for automatic Parity Check` to yes, but it's not recommenced.
 ![parity check settings](https://i.imgur.com/gsk4Auu.png)
-5. Set up a new Script in Tautulli with only the triggers of `Playback Start` and `Playback Stop` and save.
+5. Set up a new Script in Tautulli by going to `Settings` > `Notification Agents` > `Add a new notification agent` > `Script`. On the `Configuration` tab. Add your scripts folder `/config/scripts` and your script file '`./plex-qbit-unraid.py`. Then on the `Triggers` tab, add `Playback Start` and `Playback Stop` as your only triggers and save.
 ![tautulli settings](https://i.imgur.com/NdVRjmZ.png)
-6. Adjust the limits of the qBittorrent by going to `Tools` > `Speed` then setting the `Alternate Rate Limits` to your desired speed and save.
-![qBittorrent settings](https://i.imgur.com/Dl90CKZ.png)
+6. Adjust the limits of the qBittorrent by going to `Tools` > `Speed` then setting the `Alternate Rate Limits` to your desired speed and save. The speed is up to you and what your setup can handle.
+![qBittorrent settings](https://i.imgur.com/Dl90CKZ.png).
 
 After that, you should be good to go!
 
