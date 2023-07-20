@@ -1,6 +1,6 @@
 # qBit/unRaid Slowdown
 
-This script is designed to automate the management of a Plex media server, qBittorrent client, and an Unraid server. It checks the number of active streams on the Plex server and adjusts the speed mode of the qBittorrent client accordingly. It also provides functionality to pause or resume a parity check operation on the Unraid server.
+This script is designed to automate the management of a Plex media server, qBittorrent client, and an Unraid server. It checks the number of active streams on the Plex server and adjusts the speed mode of the qBittorrent client accordingly. It also provides functionality to pause or resume a parity check operation on the Unraid server as well as pausing the mover and resuming when there are no streams (only if the mover was interrupted).
 
 ## Prerequisites
 
@@ -17,9 +17,11 @@ Before using this script, make sure you have the following:
 3. Replace the values (REPLACEME) in the .env file with login details for your set up.
 4. Make sure you have `Use increments for manual Parity Check` and `Use increments for scheduled Parity Check` set to YES in the 'Parity Check Tuning' plugin. You can also set `Use increments for automatic Parity Check` to yes, but it's not recommenced.
 ![parity check settings](https://i.imgur.com/gsk4Auu.png)
-5. Set up a new Script in Tautulli with only the triggers of `Playback Start` and `Playback Stop` and save.
+5. Set up a new Script in Tautulli by going to `Settings` > `Notification Agents` > `Add a new notification agent` > `Script`. On the `Configuration` tab. Add your scripts folder `/config/scripts` and your script file '`./plex-qbit-unraid.py`. Then on the `Triggers` tab, add `Playback Start` and `Playback Stop` as your only triggers and save.
 ![tautulli settings](https://i.imgur.com/NdVRjmZ.png)
+6. Adjust the limits of the qBittorrent by going to `Tools` > `Speed` then setting the `Alternate Rate Limits` to your desired speed and save. The speed is up to you and what your setup can handle.
+![qBittorrent settings](https://i.imgur.com/Dl90CKZ.png).
 
 After that, you should be good to go!
 
-Now, every time something is started or stopped in Plex, the script will check if anyone is watching and slowdown qBittorrent/pause a parity check or speedup qBittorrent and resume parity check. This will only happen when there are 0 people steaming. You can check the Tautulli logs to see what the script is doing.
+Now, every time something is started or stopped in Plex, the script will check if anyone is watching and slowdown qBittorrent/pause a parity check or speedup qBittorrent, resume parity check, and resume the mover if it was interrupted. This will only happen when there are 0 people steaming. You can check the Tautulli logs to see what the script is doing.
